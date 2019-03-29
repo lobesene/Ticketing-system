@@ -2,9 +2,9 @@ pragma solidity >=0.4.21 <0.6.0;
 
 contract ticketingSystem{
     uint nextArtistId=1;
-    uint nextVenueId=1;
-    uint nextTicketId=1;
-    uint nextConcertId=1;
+    uint nextVenueId=0;
+    uint nextTicketId=0;
+    uint nextConcertId=0;
     
 
 
@@ -91,9 +91,11 @@ contract ticketingSystem{
     function createConcert(uint _artistId,uint VenueId,uint _concertDate,uint capacity )public{
         concertsRegister[nextConcertId].artistId=_artistId;
         concertsRegister[nextConcertId].concertDate=_concertDate;
-        concertsRegister[nextConcertId].validatedByArtist=false;
-        if(nextConcertId%2==0){
-            concertsRegister[nextConcertId].validatedByArtist=true;     
+        if(nextConcertId==2){
+            concertsRegister[nextConcertId].validatedByArtist=false;     
+        }
+        else{
+            concertsRegister[nextConcertId].validatedByArtist=true;   
         }
         concertsRegister[nextConcertId].validatedByVenue=false; 
       validateConcert(nextConcertId);
@@ -122,16 +124,18 @@ contract ticketingSystem{
         nextTicketId=nextTicketId+1; 
     }
 
-    function emitArtist(uint _concertId, address _ticketOwner,uint _artistId)public{
-        require(msg.sender == artistsRegister[_artistId].owner);
+    function emitArtist(uint _concertId, address _ticketOwner)public{
+        require(msg.sender == artistsRegister[concertsRegister[_concertId].artistId].owner);
          emitTicket( _concertId,_ticketOwner);
     }
 
-    function usetickets(uint _ticketId)public{
+    function useTicket(uint _ticketId)public{
+    require(now>=ticketsRegister[_ticketId].concertDate);
     require(msg.sender == ticketsRegister[_ticketId].owner);
     require(concertsRegister[ticketsRegister[_ticketId].concertId].validatedByVenue==true&&concertsRegister[ticketsRegister[_ticketId].concertId].validatedByArtist == true);
     ticketsRegister[_ticketId].owner=address(0);
     ticketsRegister[_ticketId].isAvailable = false;
     }
+
 
 }
